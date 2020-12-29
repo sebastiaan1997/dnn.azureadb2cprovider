@@ -335,7 +335,11 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
         {
             AuthToken = token;
         }
-
+        /// <summary>
+        /// Get the current user data from the Azure database.
+        /// </summary>
+        /// <param name="pToken">The JWT user token</param>
+        /// <returns></returns>
         internal AzureUserData GetCurrentUserInternal(JwtSecurityToken pToken = null)
         {
             if (pToken == null && (!IsCurrentUserAuthorized() || JwtIdToken == null))
@@ -343,16 +347,16 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                 return null;
             }
             var claims = JwtIdToken.Claims.ToArray();
-            EnsureClaimExists(claims, FirstNameClaimName);
-            EnsureClaimExists(claims, LastNameClaimName);
+            // EnsureClaimExists(claims, FirstNameClaimName);
+            // EnsureClaimExists(claims, LastNameClaimName);
             EnsureClaimExists(claims, EmailClaimName);
             EnsureClaimExists(claims, UserIdClaim);
             EnsureClaimExists(claims, "sub");       // we need this claim to make calls to AAD Graph
 
             var user = new AzureUserData()
             {
-                AzureFirstName = claims.FirstOrDefault(x => x.Type == FirstNameClaimName)?.Value,
-                AzureLastName = claims.FirstOrDefault(x => x.Type == LastNameClaimName)?.Value,
+                AzureFirstName = claims.FirstOrDefault(x => x.Type == FirstNameClaimName)?.Value ?? claims.FirstOrDefault(x => x.Type == EmailClaimName)?.Value ?? String.Empty,
+                AzureLastName = claims.FirstOrDefault(x => x.Type == LastNameClaimName)?.Value  ?? claims.FirstOrDefault(x => x.Type == EmailClaimName)?.Value ?? String.Empty,
                 Email = claims.FirstOrDefault(x => x.Type == EmailClaimName)?.Value,
                 Id = claims.FirstOrDefault(x => x.Type == UserIdClaim).Value
             };
